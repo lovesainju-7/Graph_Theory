@@ -1,42 +1,51 @@
-# algorithms.py
-
 import networkx as nx
 from geopy.distance import geodesic
+import time
 
-# Dijkstra Algorithm to find the shortest path
+# Dijkstra Algorithm
 def dijkstra_algorithm(G, source, target):
     return nx.dijkstra_path(G, source=source, target=target, weight='weight')
 
-# Bellman-Ford Algorithm to handle graphs with negative edge weights
-def bellman_ford_algorithm(G, source):
-    return nx.bellman_ford_path(G, source=source, target=None, weight='weight')
+# Bellman-Ford Algorithm
+def bellman_ford_algorithm(G, source, target):
+    return nx.bellman_ford_path(G, source=source, target=target, weight='weight')
 
-# A* Algorithm (Heuristic is now defined correctly)
+# A* Algorithm
 def a_star_algorithm(G, source, target):
     def heuristic(node1, node2):
         pos1 = G.nodes[node1]['pos']
         pos2 = G.nodes[node2]['pos']
-        # Swap the coordinates to make sure it's in (latitude, longitude) order
-        return geodesic((pos1[1], pos1[0]), (pos2[1], pos2[0])).kilometers  # lat, lon
+        return geodesic((pos1[1], pos1[0]), (pos2[1], pos2[0])).kilometers
 
     return nx.astar_path(G, source=source, target=target, weight='weight', heuristic=heuristic)
 
-# Function to compare all routing algorithms and print results
+# Compare Routing Algorithms
 def compare_routing_algorithms(G, source, target):
     # Compare Dijkstra
     print("\nDijkstra Algorithm:")
+    start = time.time()
     dijkstra_path = dijkstra_algorithm(G, source, target)
-    print(f"Shortest Path from {source} to {target}: {dijkstra_path}")
-
+    dijkstra_time = time.time() - start
+    print(f"Shortest Path: {dijkstra_path}")
+    print(f"Execution Time: {dijkstra_time:.6f} seconds")
+    
     # Compare Bellman-Ford
     print("\nBellman-Ford Algorithm:")
-    bellman_ford_paths = bellman_ford_algorithm(G, source)
-    print(f"Paths from {source}: {bellman_ford_paths}")
-
+    start = time.time()
+    bellman_ford_path = bellman_ford_algorithm(G, source, target)
+    bellman_ford_time = time.time() - start
+    print(f"Shortest Path: {bellman_ford_path}")
+    print(f"Execution Time: {bellman_ford_time:.6f} seconds")
+    
     # Compare A* Algorithm
     print("\nA* Algorithm:")
+    start = time.time()
     try:
         a_star_path = a_star_algorithm(G, source, target)
-        print(f"A* Path from {source} to {target}: {a_star_path}")
+        a_star_time = time.time() - start
+        print(f"Shortest Path: {a_star_path}")
+        print(f"Execution Time: {a_star_time:.6f} seconds")
+    except nx.NetworkXNoPath:
+        print("No path exists.")
     except Exception as e:
-        print(f"Error in A* Algorithm: {e}")
+        print(f"Error: {e}")
