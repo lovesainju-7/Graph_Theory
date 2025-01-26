@@ -24,16 +24,6 @@ servers = {
     "Manila (I-Root)": (14.605478137135725, 120.98524509935208),
     "Taipei (K-Root)": (25.079091582404914, 121.57650285075167),
     "Hongkong (F-Root)": (22.402082576524865, 114.10929040891995),
-    "Sydney (I-Root)": (-33.8688197, 151.2092955),  # Adding an example Australian server
-    "Auckland (I-Root)": (-36.848459, 174.763332),  # Adding an example New Zealand server
-    "Cape Town (I-Root)": (-33.9248685, 18.4232202),  # Adding an example South African server
-    "London (F-Root)": (51.507351, -0.127758),  # Adding an example UK server
-    "New York (I-Root)": (40.712776, -74.005974),  # Adding an example US server
-    "Rio de Janeiro (I-Root)": (-22.906847, -43.172896),  # Adding an example Brazil server
-    "Paris (F-Root)": (48.856613, 2.352222),  # Adding an example France server
-    "Moscow (I-Root)": (55.755825, 37.617298),  # Adding an example Russia server
-    "Berlin (F-Root)": (52.520008, 13.404954),  # Adding an example Germany server
-    "Buenos Aires (I-Root)": (-34.603684, -58.381559),  # Adding an example Argentina server
 }
 
 # Function to simulate dynamic factors affecting latency
@@ -41,13 +31,16 @@ def get_dynamic_latency(distance):
     # Simulate weather effects (e.g., 1.2x latency during bad weather)
     weather_factor = random.uniform(1.0, 1.3)  # Random factor between 1.0 and 1.3
 
+    # Simulate network congestion (e.g., 1.5x latency during peak hours)
+    congestion_factor = random.uniform(1.0, 1.5)  # Random factor between 1.0 and 1.5
+
     # Simulate server downtime (e.g., 10% chance of server downtime)
     downtime_factor = random.choice([1, float('inf')])  # 1 means no downtime, inf means downtime
     
     if downtime_factor == float('inf'):
         return float('inf')  # Server is down, set latency to infinity
 
-    return distance * 0.1 * weather_factor  # Simulated latency with a weather factor
+    return distance * 0.1 * weather_factor * congestion_factor  # Simulated latency with weather and congestion factors
 
 # Function to create the network graph with dynamic latency
 def create_network_graph(threshold=2000):
@@ -58,6 +51,46 @@ def create_network_graph(threshold=2000):
         G.add_node(server, pos=(location[1], location[0]))  # Longitude, Latitude
 
     # Adding edges with dynamic latency
+    for server1, loc1 in servers.items():
+        for server2, loc2 in servers.items():
+            if server1 != server2:
+                distance = geodesic(loc1, loc2).kilometers
+                if distance <= threshold:
+                    latency = get_dynamic_latency(distance)  # Apply dynamic latency
+                    G.add_edge(server1, server2, weight=latency)
+
+    return G
+
+# Function to create a sparse network
+def create_sparse_network():
+    G = nx.Graph()
+
+    # Adding nodes
+    for server, location in servers.items():
+        G.add_node(server, pos=(location[1], location[0]))  # Longitude, Latitude
+
+    # Adding edges with a higher threshold to make the network sparse
+    threshold = 4000  # Higher threshold means fewer edges
+    for server1, loc1 in servers.items():
+        for server2, loc2 in servers.items():
+            if server1 != server2:
+                distance = geodesic(loc1, loc2).kilometers
+                if distance <= threshold:
+                    latency = get_dynamic_latency(distance)  # Apply dynamic latency
+                    G.add_edge(server1, server2, weight=latency)
+
+    return G
+
+# Function to create a dense network
+def create_dense_network():
+    G = nx.Graph()
+
+    # Adding nodes
+    for server, location in servers.items():
+        G.add_node(server, pos=(location[1], location[0]))  # Longitude, Latitude
+
+    # Adding edges with a lower threshold to make the network dense
+    threshold = 2000  # Lower threshold means more edges
     for server1, loc1 in servers.items():
         for server2, loc2 in servers.items():
             if server1 != server2:
