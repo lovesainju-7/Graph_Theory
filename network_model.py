@@ -70,7 +70,7 @@ def create_sparse_network():
         G.add_node(server, pos=(location[1], location[0]))  # Longitude, Latitude
 
     # Adding edges with a higher threshold to make the network sparse
-    threshold = 4000  # Higher threshold means fewer edges
+    threshold = 7000  # Higher threshold means fewer edges
     for server1, loc1 in servers.items():
         for server2, loc2 in servers.items():
             if server1 != server2:
@@ -90,7 +90,7 @@ def create_dense_network():
         G.add_node(server, pos=(location[1], location[0]))  # Longitude, Latitude
 
     # Adding edges with a lower threshold to make the network dense
-    threshold = 2000  # Lower threshold means more edges
+    threshold = 4000  # Lower threshold means more edges
     for server1, loc1 in servers.items():
         for server2, loc2 in servers.items():
             if server1 != server2:
